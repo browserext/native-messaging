@@ -126,22 +126,19 @@ dictionary BrowserExtRuntimePort {
     Function postMessage;
     MessageSender sender;
 };
-
 callback BrowserExtRuntimeSendNativeMessageCallback = void (any response);
-
 [NoInterfaceObject]
 partial interface BrowserExtBrowserRuntimeNativeMessaging {
     BrowserExtRuntimePort connectNative(DOMString nativeServiceName);
     void sendNativeMessage(DOMString nativeServiceName, object message, optional RuntimeSendNativeMessageCallback callback);
-    BrowserExtRuntimePort Port;
+    attribute BrowserExtRuntimePort Port;
 };
-
-[NoInterfaceObject, Exposed=Window, CheckAnyPermissions="nativeMessaging"]
+[NoInterfaceObject, Exposed=Window,Ck_Any_Prm_BrowserAction_]
 interface BrowserExtRuntimeNativeMessagingAPI {
     readonly attribute BrowserExtRuntimeNativeMessaging runtime; 
 };
-
 Browser implements BrowserExtRuntimeNativeMessagingAPI;
+
 </pre>
             </section>
         </section>
@@ -157,6 +154,25 @@ Browser implements BrowserExtRuntimeNativeMessagingAPI;
         </ul>
         <p>Each browser implementation may have different mechanisms for registration, message filtering and lifetime management of the local client native process.</p>
     </section>
+      <script>
+        function updateCheckAnyPermissions() {
+            var checkAnyPermissionsToken = "Ck_Any_Prm_";
+            var e = document.body.getElementsByTagName("pre");
+            var n = e.length;
+            var q1 = -1;
 
+            for (var i = 0; i < n; i++) {
+                var s = e[i].innerHTML;
+                if (s.indexOf(checkAnyPermissionsToken) >= 0) {
+                    q1 = s.indexOf(checkAnyPermissionsToken) + checkAnyPermissionsToken.length;
+                    q2 = s.indexOf("_", q1);
+                    s = s.substring(0, q2) + '"' + s.substring(q2+1,s.length);
+                    e[i].innerHTML = s.replace(checkAnyPermissionsToken, 'CheckAnyPermissions="');
+
+                }
+            }
+        }
+        setTimeout(" updateCheckAnyPermissions()", 2000);
+      </script>
   </body>
 </html>
