@@ -133,7 +133,7 @@ partial interface BrowserExtBrowserRuntimeNativeMessaging {
     void sendNativeMessage(DOMString nativeServiceName, object message, optional RuntimeSendNativeMessageCallback callback);
     attribute BrowserExtRuntimePort Port;
 };
-[NoInterfaceObject, Exposed=Window,Ck_Any_Prm_BrowserAction_]
+[NoInterfaceObject, Exposed=Window,Ck_Any_Prm_nativeMessaging_]
 interface BrowserExtRuntimeNativeMessagingAPI {
     readonly attribute BrowserExtRuntimeNativeMessaging runtime; 
 };
