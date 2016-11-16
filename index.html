@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>Native Messaging for Browser Extensions</title>
@@ -79,8 +79,26 @@
         <ul>
             <li>The mechanism a browser would use to communicate with the local client native process (e.g. stdio)</li>
             <li>The registration specifics of how a browser would locate the local client native process app, service, or binary executable</li>
-            <li>The specifics of how a browser would the lifetime of local client native process</li>
+            <li>The specifics of how a browser would manage the lifetime of local client native process</li>
         </ul>
+    </section>
+
+    <section class='informative'>
+        <h2>Native Application Registration</h2>
+        <p>Extensions using the native messaging APIs identify a native application with which they wish to communciate using a string identifier.  A browser that implements native messaging must also define a method for mapping a string identifier to a native application.  This method MUST allow the browser to do the following:</p>
+        <ul>
+            <li>Locate the associated native component on the local client</li>
+            <li>Start the native process when needed</li>
+            <li>Exchange messages containing JSON serializable data</li>
+        </ul>
+        <p>The method for identifying and communicating with native processes MAY also do the following:</p>
+        <ul>
+            <li>Establish a limit on the size of messages sent both to and from the native application, to avoid resource exhaustion</li>
+            <li>Define a method for exchanging additional types of messages (i.e., data that is not JSON serializable)</li>
+            <li>Impose access control, allowing the mapping for a particular native application to be restricted to a set of specified extensions</li>
+        </ul>
+
+        <p>Each browser implementation may have different mechanisms for registration, message filtering and lifetime management of the local client native process.</p>
     </section>
 
     <section class='informative'>
@@ -118,19 +136,19 @@
                     A description of the special WebIDL syntax considerations for browser extensions are defined elsewhere in the [[!browserext]] Browser Extensions specification.
                 </p>
 <pre class="def idl">
-dictionary BrowserExtRuntimePort {
-    Function disconnect;
+interface BrowserExtRuntimePort {
+    void disconnect();
     DOMString name;
-    object onDisconnect;
-    object onMessage;
-    Function postMessage;
+    Error? error;
+    BrowserExtEvent onDisconnect;
+    BrowserExtEvent onMessage;
+    void postMessage(object msg);
     MessageSender sender;
 };
-callback BrowserExtRuntimeSendNativeMessageCallback = void (any response);
 [NoInterfaceObject]
 partial interface BrowserExtBrowserRuntimeNativeMessaging {
     BrowserExtRuntimePort connectNative(DOMString nativeServiceName);
-    void sendNativeMessage(DOMString nativeServiceName, object message, optional RuntimeSendNativeMessageCallback callback);
+    Promise&lt;object&gt; sendNativeMessage(DOMString nativeServiceName, object message);
     attribute BrowserExtRuntimePort Port;
 };
 [NoInterfaceObject, Exposed=Window,Ck_Any_Prm_nativeMessaging_]
@@ -141,19 +159,22 @@ Browser implements BrowserExtRuntimeNativeMessagingAPI;
 
 </pre>
             </section>
+            <section class="introductory">
+              <h4>Description of functions</h4>
+
+              <dl>
+                <dt><code>connectNative()</code></dt>
+                <dd>This function attempts to establish a long-lived connection with the application identified by <code>nativeServiceName</code>.  The process by which the requested native application is identified and communication is established is outside of the scope of this document, as detailed above.  A <code>BrowserExtRuntimePort</code> object is immediately returned.  If the requested application does not exist or communication cannot be established for any reason, the <code>error</code> property of the returned object will be non-null.</dd>
+
+                <dt><code>sendNativeMessage()</code></dt>
+                <dd>This function attemps to establish a temporary connection with the application identified by <code>nativeServiceName</code> and transmit the provided <code>message</code> to it.  If communication with the specified application cannot be established, the returned Promise is rejected with an appropriate error.  If communication is established, the returned Promise is resolved with the contents of the first message sent from the native application to the browser.  After the returned Promise is settled, the logical connection established by this function is longer accessible, an extension must call <code>connectNative()</code> or <code>sendNativeMessage()</code> again to conduct further communication.  Though note that the logical connection need not be tied to the lifetime of an individual process on the client, different browsers may choose to manage processes differently.</dd>
+              </dl>
+
+              <p class="issue">To what extent can we reference the definition of Port objects from the main spec and how much do we need to reproduce here?</p>
+            </section>
         </section>
     </section>
 
-    <section class='informative'>
-        <h2>Local Client Native Process Registration</h2>
-        <p>The local client native process must register itself in such a way that the browser will be able to:</p>
-        <ul>
-            <li>Locate the associated native component on the local client</li>
-            <li>Start the local client native process when needed</li>
-            <li>Filter the sending of messages to the local client native process, only allowing specified extensions to send messages</li>
-        </ul>
-        <p>Each browser implementation may have different mechanisms for registration, message filtering and lifetime management of the local client native process.</p>
-    </section>
       <script>
         function updateCheckAnyPermissions() {
             var checkAnyPermissionsToken = "Ck_Any_Prm_";
