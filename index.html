@@ -147,17 +147,16 @@ dictionary BrowserExtRuntimePort {
 };
 callback BrowserExtRuntimeSendNativeMessageCallback = void (any response);
 [NoInterfaceObject]
-partial interface BrowserExtBrowserRuntimeNativeMessaging {
+interface BrowserExtBrowserRuntimeNativeMessaging {
     BrowserExtRuntimePort connectNative(DOMString nativeServiceName);
     void sendNativeMessage(DOMString nativeServiceName, object message, optional RuntimeSendNativeMessageCallback callback);
     attribute BrowserExtRuntimePort Port;
 };
-[NoInterfaceObject, Exposed=Window,Ck_Any_Prm_nativeMessaging_]
-interface BrowserExtRuntimeNativeMessagingAPI {
+[Ck_Any_Prm_nativeMessaging_]
+interface mixin BrowserExtRuntimeNativeMessagingAPI {
     readonly attribute BrowserExtRuntimeNativeMessaging runtime; 
 };
-Browser implements BrowserExtRuntimeNativeMessagingAPI;
-
+Browser includes BrowserExtRuntimeNativeMessagingAPI;
 </pre>
             </section>
         </section>
